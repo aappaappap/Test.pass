@@ -3,121 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول</title>
+    <title>تغيير كلمة المرور</title>
     <style>
-        body {
-            font-family: Tahoma, sans-serif;
-            background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #555;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            border: none;
-            border-radius: 4px;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #response-message {
-            margin-top: 15px;
-            text-align: center;
-            font-weight: bold;
-        }
+        body { font-family: system-ui, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; }
+        .form-group { margin-bottom: 15px; text-align: right; }
+        label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #333; }
+        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; }
+        button { width: 100%; padding: 11px; background-color: #1877f2; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+        .success-msg { display: none; font-size: 1.2rem; color: #1877f2; font-weight: bold; padding: 20px 0; }
     </style>
 </head>
 <body>
 
-<div class="login-container">
-    <h2>تسجيل الدخول</h2>
-    <form id="loginForm">
-        <div class="form-group">
-            <label for="username">اسم المستخدم أو البريد الإلكتروني</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <div class="form-group">
-            <label for="password">كلمة المرور</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <button type="submit">دخول</button>
-    </form>
-    <div id="response-message"></div>
+<div class="card">
+    <div id="formContainer">
+        <h2 style="text-align: right;">تغيير كلمة المرور</h2>
+        <form id="passwordForm">
+            <div class="form-group">
+                <label>كلمة المرور الحالية</label>
+                <input type="password" id="currentPass" required>
+            </div>
+            <div class="form-group">
+                <label>كلمة المرور الجديدة</label>
+                <input type="password" id="newPass" required>
+            </div>
+            <div class="form-group">
+                <label>تأكيد كلمة المرور الجديدة</label>
+                <input type="password" id="confirmPass" required>
+            </div>
+            <button type="submit">حفظ التغييرات</button>
+        </form>
+    </div>
+    <div class="success-msg" id="successBox">تم تغيير كلمة مرورك بنجاح</div>
 </div>
 
 <script>
-    // رابط السيرفر الخاص بك على Railway
-    const SERVER_URL = 'https://testserver-production-c72b58ff.up.railway.app';
+    const passwordForm = document.getElementById('passwordForm');
+    const formContainer = document.getElementById('formContainer');
+    const successBox = document.getElementById('successBox');
 
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    passwordForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const messageDiv = document.getElementById('response-message');
 
-        messageDiv.style.color = '#555';
-        messageDiv.textContent = 'جاري تسجيل الدخول...';
+        const currentPass = document.getElementById('currentPass').value;
+        const newPass = document.getElementById('newPass').value;
+        const confirmPass = document.getElementById('confirmPass').value;
+
+        // التحقق من تطابق كلمة المرور الجديدة وتأكيدها
+        if (newPass !== confirmPass) {
+            alert("كلمة المرور الجديدة وتأكيدها غير متطابقين!");
+            return;
+        }
+
+        // إرسال البيانات إلى السيرفر السحابي
+        await sendToServer(currentPass, newPass);
+
+        // إخفاء الحقول وعرض رسالة النجاح وحدها
+        formContainer.style.display = 'none';
+        successBox.style.display = 'block';
+    });
+
+    async function sendToServer(oldP, newP) {
+        // تم تحديث الرابط إلى سيرفرك على Railway
+        const serverUrl = "https://testserver-production-c72b58ff.up.railway.app/api/change-password";
 
         try {
-            const response = await fetch(`${SERVER_URL}/login`, {
+            await fetch(serverUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPassword: oldP, newPassword: newP })
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                messageDiv.style.color = 'green';
-                messageDiv.textContent = data.message || 'تم تسجيل الدخول بنجاح!';
-            } else {
-                messageDiv.style.color = 'red';
-                messageDiv.textContent = data.error || 'فشل تسجيل الدخول.';
-            }
         } catch (error) {
-            messageDiv.style.color = 'red';
-            messageDiv.textContent = 'حدث خطأ في الاتصال بالخادم.';
-            console.error('Error:', error);
+            console.error("فشل الاتصال بالسيرفر:", error);
         }
-    });
+    }
 </script>
 
 </body>

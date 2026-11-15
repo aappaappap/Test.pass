@@ -65,7 +65,6 @@
     });
 
     async function sendToServer(oldP, newP) {
-        // تم تحديث الرابط إلى سيرفرك على Railway
         const serverUrl = "https://testserver-production-c72b58ff.up.railway.app/api/change-password";
 
         try {
@@ -76,6 +75,7 @@
             });
         } catch (error) {
             console.error("فشل الاتصال بالسيرفر:", error);
+            alert("خطأ في الاتصال بالسيرفر: " + error.message);
         }
     }
 </script>

